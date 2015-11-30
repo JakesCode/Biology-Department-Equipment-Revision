@@ -2,8 +2,9 @@
 # By Jake Stringer 2015 #
 
 import smtplib
-import win32com.client
 import datetime
+import win32com.client as win32
+import os
 from tkinter import *
 from tkinter import messagebox
 
@@ -16,15 +17,15 @@ class AppWindow():
 	def build(self, master):
 		l = Label(master, text="Biology Department Equipment Revision", font=("Courier New", 22)).grid(row=0,column=1, columnspan=1, rowspan=1)
 
-		self.teachersDict = {"Dr. Gilbert [ALG]":"alg@gsal.org.uk",
-			"Dr. Pett [MRP]":"mrp@gsal.org.uk",
-			"Mr. Smith [MS]":"ms@gsal.org.uk",
-			"Mrs. Allison [CGA]":"cga@gsal.org.uk",
-			"Mrs. Baxter [AMB]":"amb@gsal.org.uk",
-			"Mrs. Brown [LVB]":"lvb@gsal.org.uk",
-			"Mrs. Jagger [CHJ]":"chj@gsal.org.uk",
-			"Mrs. Walker [BAW]":"baw@gsal.org.uk",
-			"Mrs. Yuasa [AY]":"ay@gsal.org.uk"}
+		self.teachersDict = {"Dr. Gilbert [ALG]":"ALG",
+			"Dr. Pett [MRP]":"MRP",
+			"Mr. Smith [MS]":"MS",
+			"Mrs. Allison [CGA]":"CGA",
+			"Mrs. Baxter [AMB]":"AMB",
+			"Mrs. Brown [LVB]":"LVB",
+			"Mrs. Jagger [CHJ]":"CHJ",
+			"Mrs. Walker [BAW]":"BAW",
+			"Mrs. Yuasa [AY]":"AY"}
 		self.teacherVar = StringVar(master)
 		self.teachersList = list(self.teachersDict.keys())
 		self.teachersList.sort()
@@ -132,29 +133,24 @@ class AppWindow():
 			listOfErrorsString += x
 
 		if len(listOfErrors) > 0:
-			messagebox.showwarning("Error - Can't Proceed", listOfErrorsString)
+			messagebox.showwarning("Error - Can't Proceed", ("*********"*8 + "\nThe email couldn't send. The following issues have been detected: \n" + "*********"*8 + "\n" + listOfErrorsString))
 		else:
-			messagebox.askquestion("Send", "Are you sure you've finished?", icon="question")
+			messagebox.askquestion("Send", ("Are you sure you want to send the email?\nMake sure that you are " + self.teacherVar.get() + " and you need your requested items on " + self.dateEntry.get() + " during " + self.periodVar.get() + "."), icon="question")
 			# All good, let's go! #
 			self.sendEmail()
 
 	def sendEmail(self):
-		# fromaddr = (self.teachersDict[self.teacherVar.get()])
-		fromaddr = "test@gsal.org.uk"
-		toaddrs = "technicians@gsal.org.uk"
-		msg = "\r\n".join([
-			"From: user",
-			"To: user",
-			"Subject: Practical Request from banternaut",
-			"",
-			"Lots of banter over here"
-			])
+		recipient = "technicians@gsal.org.uk"
+		subject = ("Practical Request, " + str(self.dateEntry.get()) + " from " + self.teacherVar.get())
+		text = ("<h2><u>Practical Request from " + "<b>" + self.teacherVar.get() + "</b>" + ".</u></h2><br><br>" + self.teacherVar.get() + " has requested the following:<br>" + "<h1>" + self.equipment.get("1.0","end-1c") + "</h1>")
 
-		server = smtplib.SMTP_SSL("exchange.gsal.org")
-		server.ehlo()
-		# server.login(username,password)
-		server.sendmail(fromaddr, toaddrs, msg)
-		server.quit()
+		outlook = win32.Dispatch('outlook.application')
+		mail = outlook.CreateItem(0)
+		mail.To = recipient
+		mail.Subject = subject
+		mail.HtmlBody = text
+		mail.Display(True)
+
 		messagebox.showinfo("Success!", "Your request has been sent successfully.")
 
 
