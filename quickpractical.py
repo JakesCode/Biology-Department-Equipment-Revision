@@ -15,7 +15,7 @@ class AppWindow():
 		self.build(master)
 
 	def build(self, master):
-		l = Label(master, text="Biology Department Equipment Revision", font=("Courier New", 22)).grid(row=0,column=1, columnspan=1, rowspan=1)
+		l = Label(master, text="Biology Department Equipment Revision", font=("Courier New", 22, "bold")).grid(row=0,column=1, columnspan=1, rowspan=1)
 
 		self.teachersDict = {"Dr. Gilbert [ALG]":"ALG",
 			"Dr. Pett [MRP]":"MRP",
@@ -82,7 +82,7 @@ class AppWindow():
 		self.equipmentLabel = Label(master, text="Equipment Needed....", font = ("Courier New", 15)).grid(row=3,column=0,columnspan=1,rowspan=1)
 
 
-		self.equipment = Text(master, width=50, font=("Courier New", 13))
+		self.equipment = Text(master, width=50, font=("Courier New", 13), image=None)
 		self.equipment.grid(row=3,column=1)
 
 
@@ -142,7 +142,7 @@ class AppWindow():
 	def sendEmail(self):
 		recipient = "technicians@gsal.org.uk"
 		subject = ("Practical Request, " + str(self.dateEntry.get()) + " from " + self.teacherVar.get())
-		text = ("<h2><u>Practical Request from " + "<b>" + self.teacherVar.get() + "</b>" + ".</u></h2><br><br>" + self.teacherVar.get() + " has requested the following:<br>" + "<h1>" + self.equipment.get("1.0","end-1c") + "</h1>")
+		text = ("<h2><u>Practical Request from " + "<b>" + self.teacherVar.get() + "</b>" + ".</u></h2><br><br><h2>" + self.teacherVar.get() + " has requested the following:</h2><br>" + "<h1>" + self.equipment.get("1.0","end-1c") + "</h1>")
 
 		outlook = win32.Dispatch('outlook.application')
 		mail = outlook.CreateItem(0)
@@ -151,7 +151,30 @@ class AppWindow():
 		mail.HtmlBody = text
 		mail.Display(True)
 
+		self.createEvent(2015, (self.equipment.get("1.0","end-1c")))
+
 		messagebox.showinfo("Success!", "Your request has been sent successfully.")
+
+
+	def createEvent(self, start, subject):
+		import win32com.client
+		oOutlook = win32com.client.Dispatch("Outlook.Application")
+		appointment = oOutlook.CreateItem(1) # 1=outlook appointment item
+		appointment.Start = start
+		appointment.Subject = subject
+		appointment.Duration = 20
+		appointment.Location = "GSAL"
+		appointment.ReminderSet = True
+		appointment.ReminderMinutesBeforeStart = 0
+		appointment.Save()
+		return
+
+		table = {"11-16":20, "12-1":30, "12-16":40, "12-31":50}
+
+		for item in table.keys():
+			start = '2015-' + item + ' 18:35'
+			subject = 'P-bars. To do:' + str(table[item])
+			addevent(start, subject)
 
 
 root = Tk()
