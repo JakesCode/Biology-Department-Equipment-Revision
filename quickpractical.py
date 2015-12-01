@@ -15,7 +15,7 @@ class AppWindow():
 		self.build(master)
 
 	def build(self, master):
-		l = Label(master, text="Biology Department Equipment Revision", font=("Courier New", 22, "bold")).grid(row=0,column=1, columnspan=1, rowspan=1)
+		l = Label(master, text="Biology Department Equipment Revision", font=("Courier New", 22)).grid(row=0,column=1, columnspan=1, rowspan=1)
 
 		self.teachersDict = {"Dr. Gilbert [ALG]":"ALG",
 			"Dr. Pett [MRP]":"MRP",
@@ -36,13 +36,13 @@ class AppWindow():
 		self.teacherSelect.grid(row=1,column=0, columnspan=1, rowspan=1)
 
 
-		self.dateEntry = Entry(master)
+		self.dateEntry = Entry(master, font=("Courier New", 11), width=40)
 		self.dateEntry.grid(row=1,column=1)
 		self.dateEntry.delete(0, END)
 		self.dateEntry.insert(0, "Enter Date Here....")
 
 		self.dateVar = StringVar(master)
-		self.dateVar.set("Today's date is " + str(datetime.date.today()))
+		self.dateVar.set("Please remember to add a \n0 if the date is single-digit at any point.")
 		self.dateSuffix = Label(master, text=self.dateVar.get()).grid(row=1,column=2)
 
 
@@ -82,13 +82,13 @@ class AppWindow():
 		self.equipmentLabel = Label(master, text="Equipment Needed....", font = ("Courier New", 15)).grid(row=3,column=0,columnspan=1,rowspan=1)
 
 
-		self.equipment = Text(master, width=50, font=("Courier New", 13), image=None)
+		self.equipment = Text(master, width=50, font=("Courier New", 13))
 		self.equipment.grid(row=3,column=1)
 
 
 		self.hazcardsLabel = Label(master, text="Hazcards referred to....", font = ("Courier New", 13)).grid(row=4,column=0)
 
-		self.hazcards = Entry(master, width=75)
+		self.hazcards = Entry(master, width=75, font=("Courier New", 13))
 		self.hazcards.grid(row=4,column=1)
 
 
@@ -142,41 +142,64 @@ class AppWindow():
 	def sendEmail(self):
 		recipient = "technicians@gsal.org.uk"
 		subject = ("Practical Request, " + str(self.dateEntry.get()) + " from " + self.teacherVar.get())
-		text = ("<h2><u>Practical Request from " + "<b>" + self.teacherVar.get() + "</b>" + ".</u></h2><br><br><h2>" + self.teacherVar.get() + " has requested the following:</h2><br>" + "<h1>" + self.equipment.get("1.0","end-1c") + "</h1>")
+		self.bodyText = ("<h2>Practical Request from <u>" + "<b>" + self.teacherVar.get() + "</b>" + "</u>.</h2><br><br><h3>" + self.teacherVar.get() + " has requested the following equipment:</b3><br>" + "<h1 style='color:blue'>" + self.equipment.get("1.0","end-1c") + "</h1><br>" + "<h1>It is needed during " + self.periodVar.get() + " on <u>" + self.dateEntry.get() + "</u>.</h1>")
 
 		outlook = win32.Dispatch('outlook.application')
 		mail = outlook.CreateItem(0)
 		mail.To = recipient
 		mail.Subject = subject
-		mail.HtmlBody = text
+		mail.HtmlBody = self.bodyText
 		mail.Display(True)
 
-		self.createEvent(2015, (self.equipment.get("1.0","end-1c")))
+		self.setReminder()
 
-		messagebox.showinfo("Success!", "Your request has been sent successfully.")
+		messagebox.showinfo("Success!", "Your request/reminder has been sent successfully.")
 
 
-	def createEvent(self, start, subject):
-		import win32com.client
-		oOutlook = win32com.client.Dispatch("Outlook.Application")
-		appointment = oOutlook.CreateItem(1) # 1=outlook appointment item
+	def setReminder(self):
+
+		self.finalisedDatePreFormatted = (self.dateEntry.get().replace("/", "-"))
+
+		# Americanise the date, because Outlook #
+		self.finalisedDate = (self.finalisedDatePreFormatted[3:] + "-" + self.finalisedDatePreFormatted[:2])
+		print(self.finalisedDate)
+
+		self.finalisedPeriod = ""
+
+		if self.periodVar.get() == "Period 1":
+			self.finalisedPeriod = " 9:00"
+		elif self.periodVar.get() == "Period 2":
+			self.finalisedPeriod = " 9:55"
+		elif self.periodVar.get() == "Period 3":
+			self.finalisedPeriod = " 11:05"
+		elif self.periodVar.get() == "Period 4":
+			self.finalisedPeriod = " 12:00"
+		elif self.periodVar.get() == "Period 5":
+			self.finalisedPeriod = " 14:10"
+		elif self.periodVar.get() == "Period 6":
+			self.finalisedPeriod = " 15:05"
+
+		start = '2015-' + self.finalisedDate + self.finalisedPeriod
+		subject = 'Practical Request from ' + self.teacherVar.get()
+
+		# Set the actual reminder #
+		self.addevent(start, subject)
+
+
+	def addevent(self, start, subject):
+		oOutlook = win32.Dispatch("Outlook.Application")
+		appointment = oOutlook.CreateItem(1)
 		appointment.Start = start
 		appointment.Subject = subject
-		appointment.Duration = 20
-		appointment.Location = "GSAL"
+		appointment.Duration = 50
+		appointment.Location = "The Grammar School at Leeds"
 		appointment.ReminderSet = True
-		appointment.ReminderMinutesBeforeStart = 0
+		appointment.ReminderMinutesBeforeStart = 10
+		appointment.HtmlBody = self.bodyText
 		appointment.Save()
-		return
-
-		table = {"11-16":20, "12-1":30, "12-16":40, "12-31":50}
-
-		for item in table.keys():
-			start = '2015-' + item + ' 18:35'
-			subject = 'P-bars. To do:' + str(table[item])
-			addevent(start, subject)
-
+ 
 
 root = Tk()
 app = AppWindow(root)
+root.iconbitmap(r"icons/favicon.ico")
 root.mainloop()
