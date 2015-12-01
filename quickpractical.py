@@ -135,14 +135,17 @@ class AppWindow():
 		if len(listOfErrors) > 0:
 			messagebox.showwarning("Error - Can't Proceed", ("*********"*8 + "\nThe email couldn't send. The following issues have been detected: \n" + "*********"*8 + "\n" + listOfErrorsString))
 		else:
-			messagebox.askquestion("Send", ("Are you sure you want to send the email?\nMake sure that you are " + self.teacherVar.get() + " and you need your requested items on " + self.dateEntry.get() + " during " + self.periodVar.get() + "."), icon="question")
+			box = messagebox.askquestion("Send", ("Are you sure you want to send the email?\nMake sure that you are " + self.teacherVar.get() + " and you need your requested items on " + self.dateEntry.get() + " during " + self.periodVar.get() + "."), icon="question")
 			# All good, let's go! #
-			self.sendEmail()
+			if box == 'yes':
+				self.sendEmail()
 
 	def sendEmail(self):
 		recipient = "technicians@gsal.org.uk"
 		subject = ("Practical Request, " + str(self.dateEntry.get()) + " from " + self.teacherVar.get())
-		self.bodyText = ("<h2>Practical Request from <u>" + "<b>" + self.teacherVar.get() + "</b>" + "</u>.</h2><br><br><h3>" + self.teacherVar.get() + " has requested the following equipment:</b3><br>" + "<h1 style='color:blue'>" + self.equipment.get("1.0","end-1c") + "</h1><br>" + "<h1>It is needed during " + self.periodVar.get() + " on <u>" + self.dateEntry.get() + "</u>.</h1>")
+		self.equipmentEmail = self.equipment.get("1.0", "end-1c").replace("\n", "<br>")
+
+		self.bodyText = ("<h2>Practical Request from <u>" + "<b>" + self.teacherVar.get() + "</b>" + "</u>.</h2><br><br><h3>" + self.teacherVar.get() + " has requested the following equipment:</b3><br>" + "<h1 style='color:blue'>" + self.equipmentEmail + "</h1><br>" + "<h1>It is needed during " + self.periodVar.get() + " on <u>" + self.dateEntry.get() + "</u>.</h1>")
 
 		outlook = win32.Dispatch('outlook.application')
 		mail = outlook.CreateItem(0)
@@ -162,7 +165,6 @@ class AppWindow():
 
 		# Americanise the date, because Outlook #
 		self.finalisedDate = (self.finalisedDatePreFormatted[3:] + "-" + self.finalisedDatePreFormatted[:2])
-		print(self.finalisedDate)
 
 		self.finalisedPeriod = ""
 
@@ -192,10 +194,9 @@ class AppWindow():
 		appointment.Start = start
 		appointment.Subject = subject
 		appointment.Duration = 50
-		appointment.Location = "The Grammar School at Leeds"
+		appointment.Location = (self.finalisedPeriod + "/" + self.periodVar.get())
 		appointment.ReminderSet = True
 		appointment.ReminderMinutesBeforeStart = 10
-		appointment.HtmlBody = self.bodyText
 		appointment.Save()
  
 
