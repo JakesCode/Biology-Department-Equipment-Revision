@@ -11,11 +11,12 @@ from tkinter import messagebox
 class AppWindow():
 	def __init__(self, master):
 		self.master = master
+		master.config(bg="#AEF683")
 		self.master.title("Biology Department Equipment Revision")
 		self.build(master)
 
 	def build(self, master):
-		l = Label(master, text="Biology Department Equipment Revision", font=("Courier New", 22)).grid(row=0,column=1, columnspan=1, rowspan=1)
+		l = Label(master, text="Biology Department Equipment Revision", font=("Courier New", 20, "bold"), bg="#AEF683", fg="#0BAF6B").grid(row=0,column=1, columnspan=1, rowspan=1)
 
 		self.teachersDict = {"Dr. Gilbert [ALG]":"ALG",
 			"Dr. Pett [MRP]":"MRP",
@@ -33,17 +34,21 @@ class AppWindow():
 		self.teacherVar.set(self.teachersList[0])
 
 		self.teacherSelect = OptionMenu(master, self.teacherVar, *self.teachersList)
+		self.teacherSelect.config(font=("Courier New", 13), bg="#B1FBC2", highlightthickness=0)
 		self.teacherSelect.grid(row=1,column=0, columnspan=1, rowspan=1)
 
 
 		self.dateEntry = Entry(master, font=("Courier New", 11), width=40)
+		self.dateEntry.config(font=("Courier New", 13, "italic"), bg="#B1FBC2", highlightthickness=0)
 		self.dateEntry.grid(row=1,column=1)
 		self.dateEntry.delete(0, END)
 		self.dateEntry.insert(0, "Enter Date Here....")
 
 		self.dateVar = StringVar(master)
-		self.dateVar.set("Please remember to add a \n0 if the date is single-digit at any point.")
-		self.dateSuffix = Label(master, text=self.dateVar.get()).grid(row=1,column=2)
+		self.dateVar.set("Please remember to add\na 0 if the date is\nsingle-digit at any point.")
+		self.dateSuffix = Label(master, text=self.dateVar.get())
+		self.dateSuffix.grid(row=1,column=2)
+		self.dateSuffix.config(font=("Courier New", 11,), bg="#AEF683", highlightthickness=0)
 
 
 		self.numbersList = ["Number of groups?"]
@@ -54,6 +59,7 @@ class AppWindow():
 		self.groupsVar.set(self.numbersList[0])
 
 		self.groupsSelect = OptionMenu(master, self.groupsVar, *self.numbersList)
+		self.groupsSelect.config(font=("Courier New", 13), bg="#B1FBC2", highlightthickness=0)
 		self.groupsSelect.grid(row=2,column=0)
 
 
@@ -65,6 +71,7 @@ class AppWindow():
 		self.periodVar.set(self.periodList[0])
 
 		self.periodSelect = OptionMenu(master, self.periodVar, *self.periodList)
+		self.periodSelect.config(font=("Courier New", 13), bg="#B1FBC2", highlightthickness=0)
 		self.periodSelect.grid(row=2,column=1)
 
 
@@ -76,29 +83,33 @@ class AppWindow():
 		self.yearVar.set(self.yearList[0])
 
 		self.yearSelect = OptionMenu(master, self.yearVar, *self.yearList)
+		self.yearSelect.config(font=("Courier New", 11), bg="#B1FBC2", highlightthickness=0)
 		self.yearSelect.grid(row=2,column=2)
 
 
-		self.equipmentLabel = Label(master, text="Equipment Needed....", font = ("Courier New", 15)).grid(row=3,column=0,columnspan=1,rowspan=1)
+		self.equipmentLabel = Label(master, text="Equipment Needed....", font = ("Courier New", 15), bg="#AEF683").grid(row=3,column=0,columnspan=1,rowspan=1)
 
 
-		self.equipment = Text(master, width=50, font=("Courier New", 13))
+		self.equipment = Text(master, width=50)
+		self.equipment.config(font=("Courier New", 12), bg="#B1FBC2", highlightthickness=0)
 		self.equipment.grid(row=3,column=1)
 
 
-		self.hazcardsLabel = Label(master, text="Hazcards referred to....", font = ("Courier New", 13)).grid(row=4,column=0)
+		self.hazcardsLabel = Label(master, text="Hazcards referred to....", font = ("Courier New", 13), bg="#AEF683").grid(row=4,column=0)
 
 		self.hazcards = Entry(master, width=75, font=("Courier New", 13))
+		self.hazcards.config(font=("Courier New", 13), bg="#B1FBC2", highlightthickness=0)
 		self.hazcards.grid(row=4,column=1)
 
 
 		self.isChecked = IntVar()
-		self.riskAssessment = Checkbutton(master, text="I have carried out a risk assessment.", variable=self.isChecked, font=("Courier New", 15))
+		self.riskAssessment = Checkbutton(master, text="I have carried out a risk assessment.", variable=self.isChecked, font=("Courier New", 22))
+		self.riskAssessment.config(bg="#B1FBC2", highlightthickness=8, highlightbackground="#EC3434")
 		self.riskAssessment.grid(row=5,column=1)
 
 
-		self.sendButton = Button(master, text="Submit", font=("Courier New", 15), bg="#B8B0B0", command=lambda:self.validateSubmit(), width=40)
-		self.sendButton.grid(row=6,column=1)
+		self.sendButton = Button(master, text="Submit", font=("Courier New", 15, "bold"), bg="#25974D", command=lambda:self.validateSubmit(), width=20)
+		self.sendButton.grid(row=3,column=2)
 
 
 	def validateSubmit(self):
@@ -135,23 +146,23 @@ class AppWindow():
 		if len(listOfErrors) > 0:
 			messagebox.showwarning("Error - Can't Proceed", ("*********"*8 + "\nThe email couldn't send. The following issues have been detected: \n" + "*********"*8 + "\n" + listOfErrorsString))
 		else:
-			box = messagebox.askquestion("Send", ("Are you sure you want to send the email?\nMake sure that you are " + self.teacherVar.get() + " and you need your requested items on " + self.dateEntry.get() + " during " + self.periodVar.get() + "."), icon="question")
+			verify = messagebox.askquestion("Send", ("Are you sure you want to send the email?\nMake sure that you are " + self.teacherVar.get() + " and you need your requested items on " + self.dateEntry.get() + " during " + self.periodVar.get() + "."), icon="question")
 			# All good, let's go! #
-			if box == 'yes':
+			if verify == "yes":
 				self.sendEmail()
 
 	def sendEmail(self):
 		recipient = "technicians@gsal.org.uk"
 		subject = ("Practical Request, " + str(self.dateEntry.get()) + " from " + self.teacherVar.get())
-		self.equipmentEmail = self.equipment.get("1.0", "end-1c").replace("\n", "<br>")
-
-		self.bodyText = ("<h2>Practical Request from <u>" + "<b>" + self.teacherVar.get() + "</b>" + "</u>.</h2><br><br><h3>" + self.teacherVar.get() + " has requested the following equipment:</b3><br>" + "<h1 style='color:blue'>" + self.equipmentEmail + "</h1><br>" + "<h1>It is needed during " + self.periodVar.get() + " on <u>" + self.dateEntry.get() + "</u>.</h1>")
+		self.bodyText = ("<h2>Practical Request from <u>" + "<b>" + self.teacherVar.get() + "</b>" + "</u>.</h2><br><br><h3>" + self.teacherVar.get() + " has requested the following equipment:</b3><br>" + "<h1 style='color:blue'>" + self.equipment.get("1.0","end-1c").replace("\n", "<br>") + "</h1><br>" + "<h1>It is needed during " + self.periodVar.get() + " on <u>" + self.dateEntry.get() + "</u>.</h1>")
 
 		outlook = win32.Dispatch('outlook.application')
 		mail = outlook.CreateItem(0)
 		mail.To = recipient
 		mail.Subject = subject
 		mail.HtmlBody = self.bodyText
+		theAttachments = mail.Attachments
+		theAttachments.Add("C:\\Users\\Jake\\Documents\\GitHub\\Biology-Department-Equipment-Revision - Copy 2\\Biology-Department-Equipment-Revision\\icons\\microscope.png")
 		mail.Display(True)
 
 		self.setReminder()
@@ -165,6 +176,7 @@ class AppWindow():
 
 		# Americanise the date, because Outlook #
 		self.finalisedDate = (self.finalisedDatePreFormatted[3:] + "-" + self.finalisedDatePreFormatted[:2])
+		print(self.finalisedDate)
 
 		self.finalisedPeriod = ""
 
@@ -194,10 +206,9 @@ class AppWindow():
 		appointment.Start = start
 		appointment.Subject = subject
 		appointment.Duration = 50
-		appointment.Location = (self.finalisedPeriod + "/" + self.periodVar.get())
+		appointment.Location = (self.periodVar.get() + "/" + self.finalisedPeriod.strip(" "))
 		appointment.ReminderSet = True
-		appointment.ReminderMinutesBeforeStart = 10
-		appointment.Save()
+		appointment.SaveAs("icons\\mail.ical")
  
 
 root = Tk()
