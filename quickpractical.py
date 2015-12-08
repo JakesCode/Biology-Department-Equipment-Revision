@@ -4,6 +4,7 @@
 import smtplib
 import datetime
 import win32com.client as win32
+from icalendar import Calendar, Event
 import os
 from tkinter import *
 from tkinter import messagebox
@@ -161,8 +162,6 @@ class AppWindow():
 		mail.To = recipient
 		mail.Subject = subject
 		mail.HtmlBody = self.bodyText
-		theAttachments = mail.Attachments
-		theAttachments.Add("C:\\Users\\Jake\\Documents\\GitHub\\Biology-Department-Equipment-Revision - Copy 2\\Biology-Department-Equipment-Revision\\icons\\microscope.png")
 		mail.Display(True)
 
 		self.setReminder()
@@ -175,23 +174,23 @@ class AppWindow():
 		self.finalisedDatePreFormatted = (self.dateEntry.get().replace("/", "-"))
 
 		# Americanise the date, because Outlook #
-		self.finalisedDate = (self.finalisedDatePreFormatted[3:] + "-" + self.finalisedDatePreFormatted[:2])
+		self.finalisedDate = (self.finalisedDatePreFormatted[3:] + self.finalisedDatePreFormatted[:2])
 		print(self.finalisedDate)
 
 		self.finalisedPeriod = ""
 
 		if self.periodVar.get() == "Period 1":
-			self.finalisedPeriod = " 9:00"
+			self.finalisedPeriod = "0900"
 		elif self.periodVar.get() == "Period 2":
-			self.finalisedPeriod = " 9:55"
+			self.finalisedPeriod = "0955"
 		elif self.periodVar.get() == "Period 3":
-			self.finalisedPeriod = " 11:05"
+			self.finalisedPeriod = "1105"
 		elif self.periodVar.get() == "Period 4":
-			self.finalisedPeriod = " 12:00"
+			self.finalisedPeriod = "1200"
 		elif self.periodVar.get() == "Period 5":
-			self.finalisedPeriod = " 14:10"
+			self.finalisedPeriod = "1410"
 		elif self.periodVar.get() == "Period 6":
-			self.finalisedPeriod = " 15:05"
+			self.finalisedPeriod = "1505"
 
 		start = '2015-' + self.finalisedDate + self.finalisedPeriod
 		subject = 'Practical Request from ' + self.teacherVar.get()
@@ -201,14 +200,12 @@ class AppWindow():
 
 
 	def addevent(self, start, subject):
-		oOutlook = win32.Dispatch("Outlook.Application")
-		appointment = oOutlook.CreateItem(1)
-		appointment.Start = start
-		appointment.Subject = subject
-		appointment.Duration = 50
-		appointment.Location = (self.periodVar.get() + "/" + self.finalisedPeriod.strip(" "))
-		appointment.ReminderSet = True
-		appointment.SaveAs("icons\\mail.ical")
+		cal = Calendar()
+		cal.["dtstart"] = ("2015" + self.finalisedDate + "T" + self.finalisedPeriod + "00")
+		cal.add("summary", subject)
+		cal.add("attendee", "MAILTO:technicians@gsal.org.uk")
+		cal.to_ical()
+		print(cal)
  
 
 root = Tk()
